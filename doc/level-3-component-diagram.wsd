@@ -1,0 +1,48 @@
+@startuml C4_Elements
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+!global $EXISTING_SYSTEM_BG_COLOR = "#999999"
+!global $EXISTING_SYSTEM_BORDER_COLOR = "#8A8A8A"
+
+!unquoted procedure System_Existing($alias, $label, $descr="", $sprite="", $tags="")
+rectangle "$getSystem($label, $descr, $sprite)$getProps()" $toStereos("external system", $tags) as $alias
+!endprocedure
+
+UpdateSkinparamsAndLegendEntry("external system", $bgColor=$EXISTING_SYSTEM_BG_COLOR, $fontColor=$COLOR_NEUTRAL, $borderColor=$EXISTING_SYSTEM_BORDER_COLOR)
+
+Container(aggregator, "Data Aggregator Service", "Spring Boot", "Collects cryptocurrency prices fetched from external crypto exchanges and forwards them to the arbitrage service")
+System_Boundary(c3, "Arbitrage service") {
+
+    Component(initializer, "Coin Initializer", "Akka service", "Endpoint for receiving gRPC messages regarding price updates from Data Aggregator service and notify coin actor")
+    Component(controller, "Arbitrage Controller", "Akka gRPC", "Endpoint for receiving gRPC messages regarding price updates from Data Aggregator service and notify coin actor")
+    Component(coin1, "Coin Actor (ex. BTC)", "Akka actor", "Store price of specific coin on specific exchange. Handles messages for price updates and arbitrage checks")
+    Component(coin2, "Coin Actor (ex. ETH)", "Akka actor", "Store price of specific coin on specific exchange. Handles messages for price updates and arbitrage checks")
+    Component(coin3, "Coin Actor (ex. XLM)", "Akka actor", "Store price of specific coin on specific exchange. Handles messages for price updates and arbitrage checks")
+    Component(notification, "Notification Actor", "Akka actor", "Notifies subscribed users about detected opportunities on market")
+}
+ContainerDb(db, "Database", "MySQL", "Holds information about Botocrypt consumers", $sprite="mysql_server")
+Person(consumer, "Botocrypt consumer", "User who is subscribed to Botocrypt platform")
+
+Rel_D(aggregator, controller, "Forwards crypto info from exchanges", "gRPC")
+
+Rel_D(initializer, coin1, "Initialize coin actor", "Akka mailbox")
+Rel_D(initializer, coin2, "Initialize coin actor", "Akka mailbox")
+Rel_D(initializer, coin3, "Initialize coin actor", "Akka mailbox")
+
+Rel_D(controller, coin1, "Send coin price update", "Akka mailbox")
+Rel_D(controller, coin2, "Send coin price update", "Akka mailbox")
+Rel_D(controller, coin3, "Send coin price update", "Akka mailbox")
+
+Rel_R(coin1, coin2, "Send trading path event", "Akka mailbox")
+Rel_L(coin2, coin1, "Send trading path event", "Akka mailbox")
+Rel_R(coin2, coin3, "Send trading path event", "Akka mailbox")
+Rel_L(coin3, coin2, "Send trading path event", "Akka mailbox")
+
+Rel_D(coin1, notification, "Send notify event for found opportunity", "Akka mailbox")
+Rel_D(coin2, notification, "Send notify event for found opportunity", "Akka mailbox")
+Rel_D(coin3, notification, "Send notify event for found opportunity", "Akka mailbox")
+
+Rel_L(notification, db, "Reads from", "JDBC")
+Rel_R(notification, consumer, "Sends e-mail regarding opportunity")
+
+@enduml
