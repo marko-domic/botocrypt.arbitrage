@@ -22,3 +22,27 @@ model for visualising):
 
 *Level 3 - Component diagram*
 ![Level 3 - Component diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/level-3-component-diagram.wsd)
+
+&nbsp;&nbsp;
+
+There are 2 different role types of Arbitrage service. 
+
+First is to initialize all necessary actors for price calculations, described on diagram bellow:
+
+&nbsp;&nbsp;
+
+*Actor initialization diagram*
+![Actor initialization sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/actor-init-sequence-diagram.wsd)
+
+&nbsp;&nbsp;
+
+Second and the main purpose of this service is to calculate price difference between crypto coins 
+and exchanges as well:
+
+&nbsp;&nbsp;
+
+*Arbitrage calculation diagram*
+![Arbitrage calculation sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/arbitrage-calculation-sequence-diagram.wsd)
+
+
+
