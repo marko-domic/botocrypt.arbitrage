@@ -18,7 +18,7 @@ System_Boundary(c3, "Arbitrage service") {
     Component(coin1, "Coin Actor (ex. BTC)", "Akka actor", "Store price of specific coin on specific exchange. Handles messages for price updates and arbitrage checks")
     Component(coin2, "Coin Actor (ex. ETH)", "Akka actor", "Store price of specific coin on specific exchange. Handles messages for price updates and arbitrage checks")
     Component(coin3, "Coin Actor (ex. XLM)", "Akka actor", "Store price of specific coin on specific exchange. Handles messages for price updates and arbitrage checks")
-    Component(notification, "Notification Actor", "Akka actor", "Notifies subscribed users about detected opportunities on market")
+    Component(informer, "Informer Actor", "Akka actor", "Notifies subscribed users about detected opportunities on market")
 }
 ContainerDb(db, "Database", "MySQL", "Holds information about Botocrypt consumers", $sprite="mysql_server")
 Person(consumer, "Botocrypt consumer", "User who is subscribed to Botocrypt platform")
@@ -38,11 +38,11 @@ Rel_L(coin2, coin1, "Send trading path event", "Akka mailbox")
 Rel_R(coin2, coin3, "Send trading path event", "Akka mailbox")
 Rel_L(coin3, coin2, "Send trading path event", "Akka mailbox")
 
-Rel_D(coin1, notification, "Send notify event for found opportunity", "Akka mailbox")
-Rel_D(coin2, notification, "Send notify event for found opportunity", "Akka mailbox")
-Rel_D(coin3, notification, "Send notify event for found opportunity", "Akka mailbox")
+Rel_D(coin1, informer, "Send notify event for found opportunity", "Akka mailbox")
+Rel_D(coin2, informer, "Send notify event for found opportunity", "Akka mailbox")
+Rel_D(coin3, informer, "Send notify event for found opportunity", "Akka mailbox")
 
-Rel_L(notification, db, "Reads from", "JDBC")
-Rel_R(notification, consumer, "Sends e-mail regarding opportunity")
+Rel_L(informer, db, "Reads from", "JDBC")
+Rel_R(informer, consumer, "Sends e-mail regarding opportunity")
 
 @enduml
