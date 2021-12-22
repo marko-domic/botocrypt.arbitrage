@@ -11,20 +11,20 @@ model for visualising):
 &nbsp;&nbsp;
 
 *Level 1 - System context*
-&nbsp;
-![Level 1 - System context](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/level-1-system-context.wsd)
+&nbsp;&nbsp;&nbsp;&nbsp;
+![Level 1 - System context](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/level-1-system-context.wsd)
 
 &nbsp;&nbsp;
 
 *Level 2 - Container diagram*
 &nbsp;
-![Level 2 - Container diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/level-2-container-diagram.wsd)
+![Level 2 - Container diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/level-2-container-diagram.wsd)
 
 &nbsp;&nbsp;
 
 *Level 3 - Component diagram*
 &nbsp;
-![Level 3 - Component diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/level-3-component-diagram.wsd)
+![Level 3 - Component diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/level-3-component-diagram.wsd)
 
 &nbsp;&nbsp;
 
@@ -34,9 +34,7 @@ First is to initialize all necessary actors for price calculations, described on
 
 &nbsp;&nbsp;
 
-*Actor initialization diagram*
-&nbsp;
-![Actor initialization sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/actor-init-sequence-diagram.wsd)
+![Actor initialization sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/actor-init-sequence-diagram.wsd)
 
 &nbsp;&nbsp;
 
@@ -45,9 +43,7 @@ and exchanges as well:
 
 &nbsp;&nbsp;
 
-*Arbitrage calculation diagram*
-&nbsp;
-![Arbitrage calculation sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/arbitrage-calculation-sequence-diagram.wsd)
+![Arbitrage calculation sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/arbitrage-calculation-sequence-diagram.wsd)
 
 
 
