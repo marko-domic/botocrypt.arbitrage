@@ -1,16 +1,19 @@
 package com.botocrypt.arbitrage.actor.notification
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.typed.Behavior
+import akka.actor.typed.scaladsl.Behaviors
 
 object Informer {
 
   case class OpportunityAlert()
 
-  def props(): Props = Props(new Informer())
-}
+  def apply(): Behavior[OpportunityAlert] =
+    Behaviors.setup { context =>
+      Behaviors.receiveMessage { alert: OpportunityAlert =>
 
-class Informer extends Actor with ActorLogging {
+        // TODO: Implement logic for sending an alert
 
-  override def receive: Receive = ???
-
+        Behaviors.same
+      }
+    }
 }

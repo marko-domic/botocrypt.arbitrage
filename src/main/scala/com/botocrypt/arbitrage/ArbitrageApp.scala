@@ -1,10 +1,17 @@
 package com.botocrypt.arbitrage
 
-object ArbitrageApp {
+import akka.actor.typed.ActorSystem
+import com.botocrypt.arbitrage.actor.init.CoinInitializer
 
-  def main(args: Array[String]): Unit = {
+object ArbitrageApp extends App {
 
+  //#actor-system
+  val coinInitializer: ActorSystem[CoinInitializer.CreateCoinNetwork] =
+    ActorSystem(CoinInitializer(), "Arbitrage")
+  //#actor-system
 
+  //#main-send-messages
+  coinInitializer ! CoinInitializer.CreateCoinNetwork()
+  //#main-send-messages
 
-  }
 }
