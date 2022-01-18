@@ -1,4 +1,4 @@
-package com.botocrypt.arbitrage.actor.init
+package com.botocrypt.arbitrage.constant
 
 object CoinInitValues {
 

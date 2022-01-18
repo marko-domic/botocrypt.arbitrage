@@ -1,7 +1,7 @@
 package com.botocrypt.arbitrage.actor.currency
 
-import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
+import akka.actor.typed.{ActorRef, Behavior}
 
 object Coin {
 
@@ -26,6 +26,7 @@ class Coin private(context: ActorContext[Coin.CoinUpdate],
                    exchange: String,
                    var pairPrices: Map[String, Double],
                    var exchangePairs: Set[Coin.ConversionData]) {
+
   import Coin._
 
   context.log.info(s"$id coin for exchange $exchange has been created.")
