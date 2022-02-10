@@ -11,6 +11,7 @@ hs_err_pid*
 # Simple Build Tool
 # http://www.scala-sbt.org/release/docs/Getting-Started/Directories.html#configuring-version-control
 
+logs/
 dist/*
 target/
 lib_managed/

@@ -28,7 +28,7 @@ object CoinNetwork {
 
           // Validate if specific actor is already created. If so, continue with the loop
           if (coins.contains(coinId)) {
-            break
+            break()
           }
 
           // Create new conversion pairs data and zero pair prices

@@ -6,13 +6,9 @@ import com.typesafe.config.ConfigFactory
 
 object ArbitrageApp extends App {
 
-  // Important to enable HTTP/2 in ActorSystem's config
-  val conf = ConfigFactory.parseString("akka.http.server.preview.enable-http2 = on")
-    .withFallback(ConfigFactory.defaultApplication())
-
   // Create System Initializer actor
   val systemInitializer: ActorSystem[SystemInitializer.CreateCoinNetwork] =
-    ActorSystem(SystemInitializer(), "Arbitrage", conf)
+    ActorSystem(SystemInitializer(), "Arbitrage")
 
   // Trigger initializing coin actors (creating network of them) and GRPC server
   systemInitializer ! SystemInitializer.CreateCoinNetwork()

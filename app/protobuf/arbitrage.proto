@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package com.botocrypt.arbitrage.api;
+
+service ArbitrageService {
+    rpc SendCoinPairInfoFromExchange (stream CoinPairDto) returns (CoinPairResponseDto);
+}
+
+message CoinPairDto {
+    string cycle_id = 1;
+    string exchange = 2;
+    CoinPairOrderDto coin_pair_order = 3;
+}
+
+message CoinPairOrderDto {
+    string first_coin = 1;
+    string second_coin = 2;
+    double bid_average_price = 3;
+    double bid_quantity = 4;
+    double ask_average_price = 5;
+    double ask_quantity = 6;
+    string exchange = 7;
+}
+
+message CoinPairResponseDto {
+    string cycle_id = 1;
+    string status = 2;
+}

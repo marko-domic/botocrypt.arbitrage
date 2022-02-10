@@ -1,15 +1,13 @@
-name := "arbitrage"
+import play.core.PlayVersion.akkaVersion
+import play.core.PlayVersion.akkaHttpVersion
+import play.grpc.gen.scaladsl.{PlayScalaClientCodeGenerator, PlayScalaServerCodeGenerator}
+import com.typesafe.sbt.packager.docker.{Cmd, CmdLike, DockerAlias, ExecCmd}
+import play.scala.grpc.sample.BuildInfo
 
-version := "0.1"
+name := """arbitrage"""
+organization := "com.botocrypt"
 
-scalaVersion := "2.13.7"
-
-lazy val akkaVersion = "2.6.18"
-lazy val akkaHttpVersion = "10.2.7"
-lazy val akkaGrpcVersion = "2.1.2"
-lazy val logbackVersion = "1.2.10"
-
-enablePlugins(AkkaGrpcPlugin)
+version := "1.0-SNAPSHOT"
 
 // Arbitrage API spec constants
 lazy val arbitrageApiSpecRepoUrl = "https://raw.githubusercontent.com/marko-domic/botocrypt.proto"
@@ -24,22 +22,63 @@ lazy val arbitrageServiceApiSpecUrl = s"$arbitrageApiSpecRepoUrl/$arbitrageApiSp
 lazy val protoFiles: Map[String, String] =
   Map(arbitrageApiSpecFileName -> arbitrageServiceApiSpecUrl)
 
-libraryDependencies ++= Seq(
+lazy val root = (project in file("."))
+  .enablePlugins(PlayScala)
+  .enablePlugins(AkkaGrpcPlugin) // enables source generation for gRPC
+  .enablePlugins(PlayAkkaHttp2Support) // enables serving HTTP/2 and gRPC
+  // #grpc_play_plugins
+  .settings(
+    akkaGrpcGeneratedLanguages := Seq(AkkaGrpc.Scala),
+    // #grpc_client_generators
+    // build.sbt
+    akkaGrpcExtraGenerators += PlayScalaClientCodeGenerator,
+    // #grpc_client_generators
+    // #grpc_server_generators
+    // build.sbt
+    akkaGrpcExtraGenerators += PlayScalaServerCodeGenerator,
+    // #grpc_server_generators
+    PlayKeys.devSettings ++= Seq(
+      "play.server.http.port" -> "disabled",
+      "play.server.https.port" -> "9443",
+      // Configures the keystore to use in Dev mode. This setting is equivalent to `play.server.https.keyStore.path`
+      // in `application.conf`.
+      "play.server.https.keyStore.path" -> "conf/selfsigned.keystore"
+    )
+  )
+  .settings(
+    // workaround to https://github.com/akka/akka-grpc/pull/470#issuecomment-442133680
+    dockerBaseImage := "openjdk:8-alpine",
+    dockerCommands  :=
+      Seq.empty[CmdLike] ++
+        Seq(
+          Cmd("FROM", "openjdk:8-alpine"),
+          ExecCmd("RUN", "apk", "add", "--no-cache", "bash")
+        ) ++
+        dockerCommands.value.tail ,
+    Docker / dockerAliases += DockerAlias(None, None, "play-scala-grpc-example", None),
+    Docker / packageName := "play-scala-grpc-example"
+  )
+  .settings(
+    libraryDependencies ++= CompileDeps ++ TestDeps
+  )
 
-  "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+val CompileDeps = Seq(
+  guice,
+  "com.lightbend.play"      %% "play-grpc-runtime"    % BuildInfo.playGrpcVersion,
+  "com.typesafe.akka"       %% "akka-discovery"       % akkaVersion,
+  "com.typesafe.akka"       %% "akka-http"            % akkaHttpVersion,
+  "com.typesafe.akka"       %% "akka-http-spray-json" % akkaHttpVersion,
+  // Test Database
+  "com.h2database" % "h2" % "1.4.199"
+)
 
-  "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-http2-support" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-  "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-  "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
-  "com.typesafe.akka" %% "akka-pki" % akkaVersion,
-
-  // The Akka HTTP overwrites are required because Akka-gRPC depends on 10.1.x
-  "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-http2-support" % akkaHttpVersion,
-
-  "ch.qos.logback" % "logback-classic" % logbackVersion
+val playVersion = play.core.PlayVersion.current
+val TestDeps = Seq(
+  "com.lightbend.play"      %% "play-grpc-scalatest" % BuildInfo.playGrpcVersion % Test,
+  "com.lightbend.play"      %% "play-grpc-specs2"    % BuildInfo.playGrpcVersion % Test,
+  "com.typesafe.play"       %% "play-test"           % playVersion     % Test,
+  "com.typesafe.play"       %% "play-specs2"         % playVersion     % Test,
+  "org.scalatestplus.play"  %% "scalatestplus-play"  % "5.0.0" % Test
 )
 
 // Task for removing all proto files from src/main/protobuf
@@ -86,6 +125,21 @@ downloadProtoFiles := {
   streams.value.log.info(s"Finished with downloading proto files in $destinationProtobufDirectory.")
 }
 
+scalaVersion := "2.13.8"
+scalacOptions ++= List("-encoding", "utf8", "-deprecation", "-feature", "-unchecked")
+
+libraryDependencies += guice
+libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+
 // Set task dependency chain
 Compile / compile := (Compile / compile).dependsOn(
   downloadProtoFiles.dependsOn(cleanupProtobufDirectory)).value
+
+// Make verbose tests
+Test / testOptions := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
+
+// Adds additional packages into Twirl
+//TwirlKeys.templateImports += "com.botocrypt.controllers._"
+
+// Adds additional packages into conf/routes
+// play.sbt.routes.RoutesKeys.routesImport += "com.botocrypt.binders._"

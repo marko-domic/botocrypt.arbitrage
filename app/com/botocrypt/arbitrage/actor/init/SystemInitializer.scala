@@ -3,7 +3,6 @@ package com.botocrypt.arbitrage.actor.init
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import com.botocrypt.arbitrage.actor.currency.Coin
-import com.botocrypt.arbitrage.server.ArbitrageServer
 
 object SystemInitializer {
 
@@ -28,9 +27,6 @@ class SystemInitializer private(context: ActorContext[SystemInitializer.Initiali
 
       // Initialize Arbitrage coin actor network
       var coins: Map[String, ActorRef[Coin.CoinUpdate]] = CoinNetwork.initialize(context)
-
-      // Initialize Arbitrage gRPC server
-      ArbitrageServer(context).run()
 
       context.log.info("Arbitrage system is up and running")
 
