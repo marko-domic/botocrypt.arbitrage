@@ -31,4 +31,4 @@ project/plugins/project/
 .DS_Store
 
 # Ignore all proto files, as they are downloaded in compile phase
-src/main/protobuf/
+app/protobuf/
