@@ -4,17 +4,21 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.ActorContext
 import com.botocrypt.arbitrage.actor.currency.Coin
 import com.botocrypt.arbitrage.actor.currency.Coin.ConversionData
+import com.botocrypt.arbitrage.actor.receiver.Receiver
 import com.botocrypt.arbitrage.constant.CoinInitValues
 import com.botocrypt.arbitrage.util.CoinUtil
+import play.api.Logger
 
 import scala.util.control.Breaks.{break, breakable}
 
 object CoinNetwork {
 
-  def initialize(context: ActorContext[SystemInitializer.Initializing]):
+  private val logger = Logger.apply(this.getClass)
+
+  def initialize(context: ActorContext[Receiver.Info]):
   Map[String, ActorRef[Coin.CoinUpdate]] = {
 
-    context.log.info("Initializing coin actors")
+    logger.info("Initializing coin actors")
 
     var coins: Map[String, ActorRef[Coin.CoinUpdate]] = Map.empty
 
@@ -59,12 +63,12 @@ object CoinNetwork {
       }
     }
 
-    context.log.info("Coin actors initialized successfully")
+    logger.info("Coin actors initialized successfully")
 
     coins
   }
 
-  private def createCoin(context: ActorContext[SystemInitializer.Initializing], id: String,
+  private def createCoin(context: ActorContext[Receiver.Info], id: String,
                          exchange: String, pairPrices: Map[String, Double],
                          exchangePairs: Set[ConversionData]): ActorRef[Coin.CoinUpdate] = {
     context.spawn(Coin(id, exchange, pairPrices, exchangePairs),

@@ -12,6 +12,8 @@ object Coin {
   case class SetCoinPairActor(coinId: String, coinPairActor: ActorRef[CoinUpdate])
     extends CoinUpdate
 
+  case class PoisonPill() extends CoinUpdate
+
   case class ConversionData(landingCurrencyId: String, landingCurrency: ActorRef[CoinUpdate],
                             exchange: String, commissions: (Double, Double))
 
@@ -62,6 +64,8 @@ class Coin private(context: ActorContext[Coin.CoinUpdate],
       // TODO: Implement logic for updating prices received from Botocrypt Aggregator
 
       Behaviors.same
+
+    case _: PoisonPill => Behaviors.stopped
   }
 
   private def getIdentity(): String = getIdentity(exchange, id)
