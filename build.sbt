@@ -24,25 +24,13 @@ lazy val root = (project in file("."))
   .enablePlugins(PlayScala)
   .enablePlugins(AkkaGrpcPlugin) // enables source generation for gRPC
   .enablePlugins(PlayAkkaHttp2Support) // enables serving HTTP/2 and gRPC
-  // #grpc_play_plugins
   .settings(
     akkaGrpcGeneratedLanguages := Seq(AkkaGrpc.Scala),
-    // #grpc_client_generators
-    // build.sbt
     akkaGrpcExtraGenerators += PlayScalaClientCodeGenerator,
-    // #grpc_client_generators
-    // #grpc_server_generators
-    // build.sbt
     akkaGrpcExtraGenerators += PlayScalaServerCodeGenerator,
-    // #grpc_server_generators
     PlayKeys.devSettings ++= Seq(
-      //      "play.server.http.port" -> "disabled",
       "play.server.http.port" -> "9080",
-      //      "play.server.https.port" -> "9443",
       "play.server.https.port" -> "disabled"
-      // Configures the keystore to use in Dev mode. This setting is equivalent to `play.server.https.keyStore.path`
-      // in `application.conf`.
-      //      "play.server.https.keyStore.path" -> "conf/selfsigned.keystore"
     )
   )
   .settings(
