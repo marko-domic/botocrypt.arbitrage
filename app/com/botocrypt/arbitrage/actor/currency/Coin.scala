@@ -3,6 +3,7 @@ package com.botocrypt.arbitrage.actor.currency
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import com.botocrypt.arbitrage.actor.notification.Informer
+import com.botocrypt.arbitrage.util.CoinIdentity
 import play.api.Logger
 
 object Coin {
@@ -62,14 +63,16 @@ class Coin private(context: ActorContext[Coin.Update],
       return Behaviors.same
     }
 
-    logger.info(s"Setting coin pair $coinBaseId:$updateCoinId from exchange " +
-      s"$exchange to exchange ${landingConversionData.exchange}.")
+    if (landingConversionData.landingCurrency == null) {
+      logger.info(s"Setting coin pair ${CoinIdentity.getCoinId(coinBaseId, exchange)} - " +
+        s"$updateCoinId from exchange $exchange to exchange ${landingConversionData.exchange}.")
 
-    val newLandingConversionData = ConversionData(landingConversionData.landingCurrencyId,
-      updateCoinActor, landingConversionData.exchange, landingConversionData.commissions)
+      val newLandingConversionData = ConversionData(landingConversionData.landingCurrencyId,
+        updateCoinActor, landingConversionData.exchange, landingConversionData.commissions)
 
-    pairConversionData -= updateCoinId
-    pairConversionData += updateCoinId -> newLandingConversionData
+      pairConversionData -= updateCoinId
+      pairConversionData += updateCoinId -> newLandingConversionData
+    }
 
     Behaviors.same
   }
