@@ -1,8 +1,6 @@
-import play.core.PlayVersion.akkaVersion
-import play.core.PlayVersion.akkaHttpVersion
-import play.grpc.gen.scaladsl.{PlayScalaClientCodeGenerator, PlayScalaServerCodeGenerator}
 import com.typesafe.sbt.packager.docker.{Cmd, CmdLike, DockerAlias, ExecCmd}
-import play.scala.grpc.sample.BuildInfo
+import play.core.PlayVersion.{akkaHttpVersion, akkaVersion}
+import play.grpc.gen.scaladsl.{PlayScalaClientCodeGenerator, PlayScalaServerCodeGenerator}
 
 name := """arbitrage"""
 organization := "com.botocrypt"
@@ -38,47 +36,54 @@ lazy val root = (project in file("."))
     akkaGrpcExtraGenerators += PlayScalaServerCodeGenerator,
     // #grpc_server_generators
     PlayKeys.devSettings ++= Seq(
-      "play.server.http.port" -> "disabled",
-      "play.server.https.port" -> "9443",
+      //      "play.server.http.port" -> "disabled",
+      "play.server.http.port" -> "9080",
+      //      "play.server.https.port" -> "9443",
+      "play.server.https.port" -> "disabled"
       // Configures the keystore to use in Dev mode. This setting is equivalent to `play.server.https.keyStore.path`
       // in `application.conf`.
-      "play.server.https.keyStore.path" -> "conf/selfsigned.keystore"
+      //      "play.server.https.keyStore.path" -> "conf/selfsigned.keystore"
     )
   )
   .settings(
     // workaround to https://github.com/akka/akka-grpc/pull/470#issuecomment-442133680
     dockerBaseImage := "openjdk:8-alpine",
-    dockerCommands  :=
+    dockerCommands :=
       Seq.empty[CmdLike] ++
         Seq(
           Cmd("FROM", "openjdk:8-alpine"),
           ExecCmd("RUN", "apk", "add", "--no-cache", "bash")
         ) ++
-        dockerCommands.value.tail ,
+        dockerCommands.value.tail,
     Docker / dockerAliases += DockerAlias(None, None, "play-scala-grpc-example", None),
-    Docker / packageName := "play-scala-grpc-example"
+    Docker / packageName := "play-scala-grpc-example",
   )
   .settings(
     libraryDependencies ++= CompileDeps ++ TestDeps
   )
 
-val CompileDeps = Seq(
-  guice,
-  "com.lightbend.play"      %% "play-grpc-runtime"    % BuildInfo.playGrpcVersion,
-  "com.typesafe.akka"       %% "akka-discovery"       % akkaVersion,
-  "com.typesafe.akka"       %% "akka-http"            % akkaHttpVersion,
-  "com.typesafe.akka"       %% "akka-http-spray-json" % akkaHttpVersion,
-  // Test Database
-  "com.h2database" % "h2" % "1.4.199"
-)
+scalaVersion := "2.13.8"
+scalacOptions ++= List("-encoding", "utf8", "-deprecation", "-feature", "-unchecked")
 
 val playVersion = play.core.PlayVersion.current
+val playGrpcVersion = "0.9.1"
+
+val CompileDeps = Seq(
+  guice,
+  "com.lightbend.play" %% "play-grpc-runtime" % playGrpcVersion,
+  "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
+  "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
+  "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
+  "com.h2database" % "h2" % "2.1.210"
+)
+
 val TestDeps = Seq(
-  "com.lightbend.play"      %% "play-grpc-scalatest" % BuildInfo.playGrpcVersion % Test,
-  "com.lightbend.play"      %% "play-grpc-specs2"    % BuildInfo.playGrpcVersion % Test,
-  "com.typesafe.play"       %% "play-test"           % playVersion     % Test,
-  "com.typesafe.play"       %% "play-specs2"         % playVersion     % Test,
-  "org.scalatestplus.play"  %% "scalatestplus-play"  % "5.0.0" % Test
+  "com.lightbend.play" %% "play-grpc-scalatest" % playGrpcVersion % Test,
+  "com.lightbend.play" %% "play-grpc-specs2" % playGrpcVersion % Test,
+  "com.typesafe.play" %% "play-test" % playVersion % Test,
+  "com.typesafe.play" %% "play-specs2" % playVersion % Test,
+  "org.assertj" % "assertj-core" % "3.22.0" % Test,
+  "org.awaitility" % "awaitility" % "2.0.0" % Test
 )
 
 // Task for removing all proto files from src/main/protobuf
@@ -125,12 +130,6 @@ downloadProtoFiles := {
   streams.value.log.info(s"Finished with downloading proto files in $destinationProtobufDirectory.")
 }
 
-scalaVersion := "2.13.8"
-scalacOptions ++= List("-encoding", "utf8", "-deprecation", "-feature", "-unchecked")
-
-libraryDependencies += guice
-libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
-
 // Set task dependency chain
 Compile / compile := (Compile / compile).dependsOn(
   downloadProtoFiles.dependsOn(cleanupProtobufDirectory)).value
@@ -138,8 +137,3 @@ Compile / compile := (Compile / compile).dependsOn(
 // Make verbose tests
 Test / testOptions := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
 
-// Adds additional packages into Twirl
-//TwirlKeys.templateImports += "com.botocrypt.controllers._"
-
-// Adds additional packages into conf/routes
-// play.sbt.routes.RoutesKeys.routesImport += "com.botocrypt.binders._"

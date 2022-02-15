@@ -1,12 +1,12 @@
-import akka.actor.ActorSystem
+package com.botocrypt.arbitrage.modules
+
 import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.adapter._
 import com.botocrypt.arbitrage.actor.init.NetworkInitializer
+import com.botocrypt.arbitrage.actor.notification.Informer
 import com.botocrypt.arbitrage.actor.receiver.Receiver
+import com.botocrypt.arbitrage.modules.providers.{NetworkInitializerActorProvider, ReceiverActorProvider}
 import com.google.inject.{AbstractModule, TypeLiteral}
 import play.api.libs.concurrent.AkkaGuiceSupport
-
-import javax.inject.{Inject, Provider}
 
 /**
  * This class is a Guice module that tells Guice how to bind several
@@ -18,23 +18,16 @@ import javax.inject.{Inject, Provider}
  * adding `play.modules.enabled` settings to the `application.conf`
  * configuration file.
  */
-object ActorModule extends AbstractModule with AkkaGuiceSupport {
+class ActorModule extends AbstractModule with AkkaGuiceSupport {
 
   override def configure(): Unit = {
 
-    bindTypedActor(NetworkInitializer.apply(), "network-initializer-actor")
+    bindTypedActor(Informer.apply(), "informer-actor")
+    bind(new TypeLiteral[ActorRef[NetworkInitializer.Initialize]]() {})
+      .toProvider(classOf[NetworkInitializerActorProvider])
+      .asEagerSingleton()
     bind(new TypeLiteral[ActorRef[Receiver.Info]]() {})
       .toProvider(classOf[ReceiverActorProvider])
       .asEagerSingleton()
-
-  }
-
-  private class ReceiverActorProvider @Inject()(actorSystem: ActorSystem,
-                                                systemInitializer:
-                                                ActorRef[NetworkInitializer.Initialize])
-    extends Provider[ActorRef[Receiver.Info]] {
-    override def get(): ActorRef[Receiver.Info] = {
-      actorSystem.spawn[Receiver.Info](Receiver.apply(systemInitializer), "receiver-actor")
-    }
   }
 }

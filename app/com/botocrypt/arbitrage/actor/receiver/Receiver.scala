@@ -20,12 +20,13 @@ object Receiver {
                        askQuantity: Double
                      ) extends Info
 
-  case class CoinNetworkInitialized(coins: Map[String, ActorRef[Coin.CoinUpdate]]) extends Info
+  case class CoinNetworkInitialized(coins: Map[String, ActorRef[Coin.Update]]) extends Info
 
-  def apply(systemInitializer: ActorRef[NetworkInitializer.Initialize]): Behavior[Info] =
+  def apply(networkInitializer: ActorRef[NetworkInitializer.Initialize]): Behavior[Info] = {
     Behaviors.setup {
-      context => new Receiver(context, systemInitializer).receive()
+      context => new Receiver(context, networkInitializer).apply()
     }
+  }
 }
 
 class Receiver private(context: ActorContext[Receiver.Info],
@@ -34,9 +35,9 @@ class Receiver private(context: ActorContext[Receiver.Info],
   import Receiver._
 
   private val logger: Logger = Logger(this.getClass)
-  private var coins: Map[String, ActorRef[Coin.CoinUpdate]] = Map.empty
+  private var coins: Map[String, ActorRef[Coin.Update]] = Map.empty
 
-  protected def receive(): Behavior[Info] = initializeBehavior()
+  protected def apply(): Behavior[Info] = initializeBehavior()
 
   protected def initializeBehavior(): Behavior[Info] = Behaviors.receiveMessage {
     case coinInfo: CoinInfo => handleCoinInfoWithoutNetwork(coinInfo)
@@ -58,7 +59,7 @@ class Receiver private(context: ActorContext[Receiver.Info],
     logger.info("Coin network initializing started.")
 
     // Trigger initializing coin actors (creating network of them)
-    systemInitializer ! NetworkInitializer.CreateCoinNetwork(context, context.self)
+    systemInitializer ! NetworkInitializer.CreateCoinNetwork(coins, context.self)
 
     // Resend coin update message
     resendCoinInfoMessage(coinInfo)
@@ -72,27 +73,19 @@ class Receiver private(context: ActorContext[Receiver.Info],
     Behaviors.same
   }
 
-  private def updateCoinsMap(coinsMap: Map[String, ActorRef[Coin.CoinUpdate]]): Behavior[Info] = {
+  private def updateCoinsMap(coinsMap: Map[String, ActorRef[Coin.Update]]): Behavior[Info] = {
 
-    // Add new and remove already existing coin actors
-    for ((coinId, coinActor) <- coinsMap) {
-      if (coins.contains(coinId)) {
-        // If coin actor already exists and it is not the same as created one, destroy it
-        if (coinActor.path.toString != coins(coinId).path.toString) {
-          coinActor ! Coin.PoisonPill()
-        }
-      } else {
-        // Add new coin actor
-        coins += coinId -> coinActor
-      }
-    }
-
-    // Remove coin actors which are not necessary anymore
+    // Remove coin actors which will not be used anymore
     for ((coinId, coinActor) <- coins) {
+      // If coin actor is not in new generated coin map, destroy it by sending poison pill
       if (!coinsMap.contains(coinId)) {
+        logger.info(s"Removing $coinId from network. Coin actor ref: $coinActor")
         coinActor ! Coin.PoisonPill()
       }
     }
+
+    // Set new coin actors map
+    coins = coinsMap
 
     processCoinInfoBehavior()
   }
@@ -100,6 +93,8 @@ class Receiver private(context: ActorContext[Receiver.Info],
   private def processCoinInfo(coinInfo: CoinInfo): Behavior[Info] = {
 
     // TODO: Implement logic for sending updates to coin actors
+
+    logger.info(s"$coinInfo received for processing")
 
     Behaviors.same
   }

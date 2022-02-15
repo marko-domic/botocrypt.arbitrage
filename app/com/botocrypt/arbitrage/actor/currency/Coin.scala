@@ -2,73 +2,75 @@ package com.botocrypt.arbitrage.actor.currency
 
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
+import com.botocrypt.arbitrage.actor.notification.Informer
+import play.api.Logger
 
 object Coin {
 
-  sealed trait CoinUpdate
+  sealed trait Update
 
-  case class PriceUpdate(paymentCurrencyId: String, price: Double) extends CoinUpdate
+  case class PriceUpdate(paymentCurrencyId: String, price: Double) extends Update
 
-  case class SetCoinPairActor(coinId: String, coinPairActor: ActorRef[CoinUpdate])
-    extends CoinUpdate
+  case class PairActorUpdate(coinId: String, coinPairActor: ActorRef[Update])
+    extends Update
 
-  case class PoisonPill() extends CoinUpdate
+  case class PoisonPill() extends Update
 
-  case class ConversionData(landingCurrencyId: String, landingCurrency: ActorRef[CoinUpdate],
+  case class ConversionData(landingCurrencyId: String, landingCurrency: ActorRef[Update],
                             exchange: String, commissions: (Double, Double))
 
-  def apply(id: String, exchange: String, pairPrices: Map[String, Double],
-            exchangePairs: Set[ConversionData]): Behavior[CoinUpdate] = Behaviors.setup {
-    context => new Coin(context, id, exchange, pairPrices, exchangePairs).receive()
-  }
+  def apply(coinBaseId: String, exchange: String, pairPrices: Map[String, Double],
+            pairConversionData: Map[String, Coin.ConversionData],
+            informer: ActorRef[Informer.OpportunityAlert]): Behavior[Update] =
+    Behaviors.setup {
+      context =>
+        new Coin(context, coinBaseId, exchange, pairPrices, pairConversionData, informer)
+          .apply()
+    }
 }
 
-class Coin private(context: ActorContext[Coin.CoinUpdate],
-                   id: String,
+class Coin private(context: ActorContext[Coin.Update],
+                   coinBaseId: String,
                    exchange: String,
                    var pairPrices: Map[String, Double],
-                   var exchangePairs: Set[Coin.ConversionData]) {
+                   var pairConversionData: Map[String, Coin.ConversionData],
+                   informer: ActorRef[Informer.OpportunityAlert]) {
 
   import Coin._
 
-  context.log.info(s"$id coin for exchange $exchange has been created.")
+  private val logger: Logger = Logger(this.getClass)
 
-  private def receive(): Behavior[CoinUpdate] = Behaviors.receiveMessage {
-    case setCoinPairActor: SetCoinPairActor =>
+  logger.info(s"$coinBaseId coin for exchange $exchange has been created.")
 
-      context.log.debug("SetCoinPairActor message received.")
-
-      val coinId = setCoinPairActor.coinId
-      val coinActor = setCoinPairActor.coinPairActor
-
-      for (conversionData <- exchangePairs) {
-        val landingCoinBaseId = conversionData.landingCurrencyId
-        val landingExchange = conversionData.exchange
-        val landingCoinId = getIdentity(landingExchange, landingCoinBaseId)
-        if (landingCoinId == coinId && conversionData.landingCurrency == null) {
-
-          context.log.info(s"Setting coin pair $id:$landingCoinBaseId from exchange $exchange to exchange "
-            + s"$landingExchange.")
-
-          val landingCoinData = ConversionData(landingCoinBaseId, coinActor, landingExchange,
-            conversionData.commissions)
-          exchangePairs -= conversionData
-          exchangePairs += landingCoinData
-        }
-      }
-
-      Behaviors.same
-
+  private def apply(): Behavior[Update] = Behaviors.receiveMessage {
+    case coinPairActorUpdate: PairActorUpdate => setCoinPairActor(coinPairActorUpdate)
     case priceUpdate: PriceUpdate =>
-
       // TODO: Implement logic for updating prices received from Botocrypt Aggregator
-
       Behaviors.same
-
     case _: PoisonPill => Behaviors.stopped
   }
 
-  private def getIdentity(): String = getIdentity(exchange, id)
+  private def setCoinPairActor(coinPairActorUpdate: PairActorUpdate): Behavior[Update] = {
+    logger.trace("SetCoinPairActor message received.")
 
-  private def getIdentity(exchange: String, id: String): String = s"$exchange:$id"
+    val updateCoinId = coinPairActorUpdate.coinId
+    val updateCoinActor = coinPairActorUpdate.coinPairActor
+
+    val landingConversionData: ConversionData = pairConversionData(updateCoinId)
+    if (landingConversionData == null) {
+      logger.warn(s"There is no conversion data for coin $updateCoinId.")
+      return Behaviors.same
+    }
+
+    logger.info(s"Setting coin pair $coinBaseId:$updateCoinId from exchange " +
+      s"$exchange to exchange ${landingConversionData.exchange}.")
+
+    val newLandingConversionData = ConversionData(landingConversionData.landingCurrencyId,
+      updateCoinActor, landingConversionData.exchange, landingConversionData.commissions)
+
+    pairConversionData -= updateCoinId
+    pairConversionData += updateCoinId -> newLandingConversionData
+
+    Behaviors.same
+  }
 }

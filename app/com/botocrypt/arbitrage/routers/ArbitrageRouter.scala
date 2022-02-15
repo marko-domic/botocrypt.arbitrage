@@ -13,8 +13,8 @@ import play.api.Logging
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ArbitrageRouter @Inject()(materialize: Materializer, system: ActorSystem,
-                                receiverActor: ActorRef[Receiver.Info])
+case class ArbitrageRouter @Inject()(materialize: Materializer, system: ActorSystem,
+                                     receiverActor: ActorRef[Receiver.Info])
   extends AbstractArbitrageServiceRouter(system) with Logging {
 
   override def sendCoinPairInfoFromExchange(in: Source[CoinPairDto, NotUsed]):
@@ -43,7 +43,7 @@ class ArbitrageRouter @Inject()(materialize: Materializer, system: ActorSystem,
 
       CoinPairStreamResponseDto(coinPairDto.cycleId, successfullyProcessed = true)
     } catch {
-      case e: Exception =>
+      case _: Exception =>
         CoinPairStreamResponseDto(coinPairDto.cycleId, successfullyProcessed = false)
     }
   }
