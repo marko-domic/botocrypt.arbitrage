@@ -10,7 +10,7 @@ object Coin {
 
   sealed trait Update
 
-  case class PriceUpdate(paymentCurrencyId: String, price: Double) extends Update
+  case class PriceUpdate(landingCoinId: String, price: Double) extends Update
 
   case class PairActorUpdate(coinId: String, coinPairActor: ActorRef[Update])
     extends Update
@@ -45,9 +45,7 @@ class Coin private(context: ActorContext[Coin.Update],
 
   private def apply(): Behavior[Update] = Behaviors.receiveMessage {
     case coinPairActorUpdate: PairActorUpdate => setCoinPairActor(coinPairActorUpdate)
-    case priceUpdate: PriceUpdate =>
-      // TODO: Implement logic for updating prices received from Botocrypt Aggregator
-      Behaviors.same
+    case priceUpdate: PriceUpdate => updateCoinPrice(priceUpdate)
     case _: PoisonPill => Behaviors.stopped
   }
 
@@ -72,6 +70,17 @@ class Coin private(context: ActorContext[Coin.Update],
 
       pairConversionData -= updateCoinId
       pairConversionData += updateCoinId -> newLandingConversionData
+    }
+
+    Behaviors.same
+  }
+
+  private def updateCoinPrice(priceUpdate: PriceUpdate): Behavior[Update] = {
+
+    val landingCoinId = priceUpdate.landingCoinId
+    if (pairPrices.contains(landingCoinId)) {
+      pairPrices += landingCoinId -> priceUpdate.price
+      // TODO: Implement sending request for opportunity search
     }
 
     Behaviors.same

@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import com.botocrypt.arbitrage.actor.currency.Coin
 import com.botocrypt.arbitrage.actor.init.NetworkInitializer
+import com.botocrypt.arbitrage.util.CoinIdentity
 import play.api.Logger
 
 object Receiver {
@@ -92,9 +93,17 @@ class Receiver private(context: ActorContext[Receiver.Info],
 
   private def processCoinInfo(coinInfo: CoinInfo): Behavior[Info] = {
 
-    // TODO: Implement logic for sending updates to coin actors
+    logger.trace(s"$coinInfo received for processing")
 
-    logger.info(s"$coinInfo received for processing")
+    val exchange: String = coinInfo.exchange
+    val firstCoinId: String = CoinIdentity.getCoinId(coinInfo.firstCoin, exchange)
+    val secondCoinId: String = CoinIdentity.getCoinId(coinInfo.secondCoin, exchange)
+
+    val firstCoinPrice: Double = coinInfo.askAveragePrice
+    val secondCoinPrice: Double = 1 / coinInfo.bidAveragePrice
+
+    coins(firstCoinId) ! Coin.PriceUpdate(secondCoinId, firstCoinPrice)
+    coins(secondCoinId) ! Coin.PriceUpdate(firstCoinId, secondCoinPrice)
 
     Behaviors.same
   }

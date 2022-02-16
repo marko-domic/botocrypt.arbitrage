@@ -55,7 +55,9 @@ object CoinNetwork {
             val landingExchange = info.exchange
             val landingCoinId = CoinIdentity.getCoinId(landingCoinBaseId, landingExchange)
 
-            pairPrices += landingCoinId -> 0.00
+            if (landingExchange == exchange) {
+              pairPrices += landingCoinId -> 0.00
+            }
 
             val conversionData = ConversionData(landingCoinBaseId, null, landingExchange,
               info.commissions)
