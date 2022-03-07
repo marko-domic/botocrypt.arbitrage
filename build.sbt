@@ -67,6 +67,8 @@ val CompileDeps = Seq(
 )
 
 val TestDeps = Seq(
+  "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
+  "org.scalatest" %% "scalatest" % "3.1.4" % Test,
   "com.lightbend.play" %% "play-grpc-scalatest" % playGrpcVersion % Test,
   "com.lightbend.play" %% "play-grpc-specs2" % playGrpcVersion % Test,
   "com.typesafe.play" %% "play-test" % playVersion % Test,
