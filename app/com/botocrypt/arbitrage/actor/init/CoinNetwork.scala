@@ -29,10 +29,6 @@ object CoinNetwork {
       for ((coinCurrencyId, pairInfo) <- coinPairsInfo) {
         breakable {
 
-          if (existingCoins.nonEmpty && coinCurrencyId == "ETH") {
-            break()
-          }
-
           // Generate coin identity
           val coinId = CoinIdentity.getCoinId(coinCurrencyId, exchange)
 
