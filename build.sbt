@@ -60,21 +60,21 @@ val CompileDeps = Seq(
   guice,
   "com.lightbend.play" %% "play-grpc-runtime" % playGrpcVersion,
   "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http" % "10.2.7",
-  "com.typesafe.akka" %% "akka-http-spray-json" % "10.2.7",
-  "com.typesafe.akka" %% "akka-http2-support" % "10.2.7",
+  "com.typesafe.akka" %% "akka-http" % "10.2.9",
+  "com.typesafe.akka" %% "akka-http-spray-json" % "10.2.9",
+  "com.typesafe.akka" %% "akka-http2-support" % "10.2.9",
   "com.h2database" % "h2" % "2.1.210"
 )
 
 val TestDeps = Seq(
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
-  "org.scalatest" %% "scalatest" % "3.1.4" % Test,
+  "org.scalatest" %% "scalatest" % "3.2.11" % Test,
   "com.lightbend.play" %% "play-grpc-scalatest" % playGrpcVersion % Test,
   "com.lightbend.play" %% "play-grpc-specs2" % playGrpcVersion % Test,
   "com.typesafe.play" %% "play-test" % playVersion % Test,
   "com.typesafe.play" %% "play-specs2" % playVersion % Test,
   "org.assertj" % "assertj-core" % "3.22.0" % Test,
-  "org.awaitility" % "awaitility" % "2.0.0" % Test
+  "org.awaitility" % "awaitility" % "4.2.0" % Test
 )
 
 // Task for removing all proto files from src/main/protobuf
