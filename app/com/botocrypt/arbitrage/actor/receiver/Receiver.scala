@@ -102,8 +102,11 @@ class Receiver private(context: ActorContext[Receiver.Info],
     val firstCoinPrice: Double = coinInfo.askAveragePrice
     val secondCoinPrice: Double = 1 / coinInfo.bidAveragePrice
 
-    coins(firstCoinId) ! Coin.PriceUpdate(secondCoinId, firstCoinPrice)
-    coins(secondCoinId) ! Coin.PriceUpdate(firstCoinId, secondCoinPrice)
+    val firstCoinQuantity: Double = coinInfo.askQuantity
+    val secondCoinQuantity: Double = coinInfo.bidAveragePrice * coinInfo.bidQuantity
+
+    coins(firstCoinId) ! Coin.PriceUpdate(coinInfo.secondCoin, firstCoinPrice, firstCoinQuantity)
+    coins(secondCoinId) ! Coin.PriceUpdate(coinInfo.firstCoin, secondCoinPrice, secondCoinQuantity)
 
     Behaviors.same
   }

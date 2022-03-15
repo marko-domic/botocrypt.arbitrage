@@ -6,19 +6,26 @@ import com.botocrypt.arbitrage.actor.notification.Informer
 import com.botocrypt.arbitrage.util.CoinIdentity
 import play.api.Logger
 
+import scala.collection.mutable
+
 object Coin {
 
   sealed trait Update
 
-  case class PriceUpdate(landingCoinId: String, price: Double) extends Update
+  case class PriceUpdate(landingCoinBaseId: String, price: Double, quantity: Double) extends Update
 
   case class PairActorUpdate(coinId: String, coinPairActor: ActorRef[Update])
     extends Update
 
+  case class Arbitrage(path: mutable.LinkedHashMap[String, ConvertedContext],
+                       exchangeToExchange: Boolean) extends Update
+
   case class PoisonPill() extends Update
 
-  case class ConversionData(landingCurrencyId: String, landingCurrency: ActorRef[Update],
+  case class ConversionData(landingCoinBaseId: String, landingCurrency: ActorRef[Update],
                             exchange: String, commissions: (Double, Double))
+
+  case class ConvertedContext(coinBaseId: String, exchange: String, amount: Double)
 
   def apply(coinBaseId: String, exchange: String, pairPrices: Map[String, Double],
             pairConversionData: Map[String, Coin.ConversionData],
@@ -43,7 +50,7 @@ class Coin private(context: ActorContext[Coin.Update],
 
   logger.info(s"$coinBaseId coin for exchange $exchange has been created.")
 
-  private def apply(): Behavior[Update] = Behaviors.receiveMessage {
+  protected def apply(): Behavior[Update] = Behaviors.receiveMessage {
     case coinPairActorUpdate: PairActorUpdate => setCoinPairActor(coinPairActorUpdate)
     case priceUpdate: PriceUpdate => updateCoinPrice(priceUpdate)
     case _: PoisonPill => Behaviors.stopped
@@ -65,7 +72,7 @@ class Coin private(context: ActorContext[Coin.Update],
       logger.info(s"Setting coin pair ${CoinIdentity.getCoinId(coinBaseId, exchange)} - " +
         s"$updateCoinId from exchange $exchange to exchange ${landingConversionData.exchange}.")
 
-      val newLandingConversionData = ConversionData(landingConversionData.landingCurrencyId,
+      val newLandingConversionData = ConversionData(landingConversionData.landingCoinBaseId,
         updateCoinActor, landingConversionData.exchange, landingConversionData.commissions)
 
       pairConversionData -= updateCoinId
@@ -77,12 +84,26 @@ class Coin private(context: ActorContext[Coin.Update],
 
   private def updateCoinPrice(priceUpdate: PriceUpdate): Behavior[Update] = {
 
-    val landingCoinId = priceUpdate.landingCoinId
-    if (pairPrices.contains(landingCoinId)) {
-      pairPrices += landingCoinId -> priceUpdate.price
-      // TODO: Implement sending request for opportunity search
+    val landingCoinBaseId = priceUpdate.landingCoinBaseId
+    if (pairPrices.contains(landingCoinBaseId)) {
+      pairPrices += landingCoinBaseId -> priceUpdate.price
+
+      val startingCoinId: String = CoinIdentity.getCoinId(coinBaseId, exchange)
+      val statingContext: ConvertedContext = ConvertedContext(coinBaseId, exchange,
+        priceUpdate.quantity)
+      val startingPath: mutable.LinkedHashMap[String, ConvertedContext] =
+        mutable.LinkedHashMap(startingCoinId -> statingContext)
+      arbitrageInsideExchange(landingCoinBaseId, startingPath)
     }
 
     Behaviors.same
+  }
+
+  private def arbitrageInsideExchange(landingCoinBaseId: String,
+                                      arbitragePath: mutable.LinkedHashMap[String, ConvertedContext]): Unit = {
+
+    val landingCoinId: String = CoinIdentity.getCoinId(landingCoinId, exchange)
+    val landingConversionData: ConversionData = pairConversionData(landingCoinId)
+    val landingQuantity =
   }
 }
