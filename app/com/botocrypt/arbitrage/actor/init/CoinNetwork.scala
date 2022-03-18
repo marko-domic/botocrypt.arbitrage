@@ -26,11 +26,11 @@ object CoinNetwork {
 
     // Create coin actors with values from init values object
     for ((exchange, coinPairsInfo) <- CoinInitValues.CoinsPerExchange) {
-      for ((coinCurrencyId, pairInfo) <- coinPairsInfo) {
+      for ((coinBaseId, pairInfo) <- coinPairsInfo) {
         breakable {
 
           // Generate coin identity
-          val coinId = CoinIdentity.getCoinId(coinCurrencyId, exchange)
+          val coinId = CoinIdentity.getCoinId(coinBaseId, exchange)
 
           // Validate if specific actor is already created. If so, continue with the loop
           if (coins.contains(coinId)) {
@@ -52,7 +52,7 @@ object CoinNetwork {
             val landingCoinId = CoinIdentity.getCoinId(landingCoinBaseId, landingExchange)
 
             if (landingExchange == exchange) {
-              pairPrices += landingCoinId -> 0.00
+              pairPrices += landingCoinBaseId -> 0.00
             }
 
             val conversionData = ConversionData(landingCoinBaseId, null, landingExchange,
@@ -61,7 +61,7 @@ object CoinNetwork {
           }
 
           // Create new coin actor and add it to final map
-          val coinActor = createCoinActor(context, coinCurrencyId, exchange, pairPrices,
+          val coinActor = createCoinActor(context, coinBaseId, exchange, pairPrices,
             conversionDataMap, informer)
 
           coins += coinId -> coinActor

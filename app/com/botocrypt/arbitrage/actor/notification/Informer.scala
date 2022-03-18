@@ -5,7 +5,9 @@ import akka.actor.typed.scaladsl.Behaviors
 
 object Informer {
 
-  case class OpportunityAlert()
+  case class OpportunityAlert(path: List[CoinContext])
+
+  case class CoinContext(coinBaseId: String, exchange: String)
 
   def apply(): Behavior[OpportunityAlert] =
     Behaviors.setup { context =>
