@@ -4,7 +4,7 @@ import akka.actor.typed.ActorRef
 import com.botocrypt.arbitrage.actor.init.NetworkInitializer
 import com.botocrypt.arbitrage.actor.notification.Informer
 import com.botocrypt.arbitrage.actor.receiver.Receiver
-import com.botocrypt.arbitrage.modules.providers.{NetworkInitializerActorProvider, ReceiverActorProvider}
+import com.botocrypt.arbitrage.modules.providers.{InformerActorProvider, NetworkInitializerActorProvider, ReceiverActorProvider}
 import com.google.inject.{AbstractModule, TypeLiteral}
 import play.api.libs.concurrent.AkkaGuiceSupport
 
@@ -22,7 +22,9 @@ class ActorModule extends AbstractModule with AkkaGuiceSupport {
 
   override def configure(): Unit = {
 
-    bindTypedActor(Informer.apply(), "informer-actor")
+    bind(new TypeLiteral[ActorRef[Informer.Update]]() {})
+      .toProvider(classOf[InformerActorProvider])
+      .asEagerSingleton()
     bind(new TypeLiteral[ActorRef[NetworkInitializer.Initialize]]() {})
       .toProvider(classOf[NetworkInitializerActorProvider])
       .asEagerSingleton()

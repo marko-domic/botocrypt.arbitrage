@@ -13,7 +13,7 @@ object NetworkInitializer {
   case class CreateCoinNetwork(existingCoins: Map[String, ActorRef[Coin.Update]],
                                sender: ActorRef[Receiver.Info]) extends Initialize
 
-  def apply(informer: ActorRef[Informer.OpportunityAlert]): Behavior[Initialize] = {
+  def apply(informer: ActorRef[Informer.Update]): Behavior[Initialize] = {
     Behaviors.setup {
       context => new NetworkInitializer(context, informer).apply()
     }
@@ -21,7 +21,7 @@ object NetworkInitializer {
 }
 
 class NetworkInitializer private(context: ActorContext[NetworkInitializer.Initialize],
-                                 informer: ActorRef[Informer.OpportunityAlert]) {
+                                 informer: ActorRef[Informer.Update]) {
 
   import NetworkInitializer._
 

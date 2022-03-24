@@ -16,7 +16,7 @@ object CoinNetwork {
   private val logger = Logger.apply(this.getClass)
 
   def initialize(context: ActorContext[NetworkInitializer.Initialize],
-                 informer: ActorRef[Informer.OpportunityAlert],
+                 informer: ActorRef[Informer.Update],
                  existingCoins: Map[String, ActorRef[Coin.Update]]):
   Map[String, ActorRef[Coin.Update]] = {
 
@@ -86,7 +86,7 @@ object CoinNetwork {
   private def createCoinActor(context: ActorContext[NetworkInitializer.Initialize], coinBaseId: String,
                               exchange: String, pairPrices: Map[String, Double],
                               conversionDataMap: Map[String, ConversionData],
-                              informer: ActorRef[Informer.OpportunityAlert]): ActorRef[Coin.Update] = {
+                              informer: ActorRef[Informer.Update]): ActorRef[Coin.Update] = {
     context.spawn(Coin.apply(coinBaseId, exchange, pairPrices, conversionDataMap, informer),
       CoinIdentity.getCoinId(coinBaseId, exchange))
   }

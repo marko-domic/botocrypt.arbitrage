@@ -3,7 +3,7 @@ package com.botocrypt.arbitrage.actor.currency
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import com.botocrypt.arbitrage.actor.currency.Coin.PairActorUpdate
 import com.botocrypt.arbitrage.actor.notification.Informer
-import com.botocrypt.arbitrage.actor.notification.Informer.{CoinContext, OpportunityAlert}
+import com.botocrypt.arbitrage.actor.notification.Informer.CoinContext
 import org.scalatest.wordspec.AnyWordSpecLike
 
 class CoinTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
@@ -17,7 +17,7 @@ class CoinTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
       val pairPrices = Map("USD" -> 40600.00)
       val usdData = Coin.ConversionData("USD", null, "CEX.IO", (0.00, 0.00))
       val pairConversionData = Map("CEX.IO:USD" -> usdData)
-      val informerProbe = testKit.createTestProbe[Informer.OpportunityAlert]()
+      val informerProbe = testKit.createTestProbe[Informer.Update]()
       val coin = testKit.spawn(Coin("BTC", "CEX.IO", pairPrices, pairConversionData,
         informerProbe.ref), "coin-test-1")
 
@@ -38,7 +38,7 @@ class CoinTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
       val pairPrices = Map("USD" -> 40600.00)
       val usdData = Coin.ConversionData("USD", null, "CEX.IO", (0.00, 0.00))
       val pairConversionData = Map("CEX.IO:USD" -> usdData)
-      val informerProbe = testKit.createTestProbe[Informer.OpportunityAlert]()
+      val informerProbe = testKit.createTestProbe[Informer.Update]()
       val coin = testKit.spawn(Coin("BTC", "CEX.IO", pairPrices, pairConversionData,
         informerProbe.ref), "coin-test-2")
 
@@ -55,7 +55,7 @@ class CoinTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
     "finding arbitrage opportunity" in {
 
       // Create informer actor probe
-      val informerProbe = testKit.createTestProbe[Informer.OpportunityAlert]()
+      val informerProbe = testKit.createTestProbe[Informer.Update]()
 
       // Values for BTC:CEX.IO actor
       val btcCexPairPrices = Map("USD" -> 40600.00)
@@ -113,13 +113,13 @@ class CoinTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
       // Validate message sent to informer about arbitrage opportunity
       val opportunityPath: List[CoinContext] = List(CoinContext("USD", "CEX.IO"), CoinContext("BTC", "CEX.IO"),
         CoinContext("BTC", "Binance"), CoinContext("USD", "Binance"))
-      informerProbe.expectMessage(OpportunityAlert(opportunityPath))
+      informerProbe.expectMessage(Update(opportunityPath))
     }
 
     "arbitrage opportunity not found" in {
 
       // Create informer actor probe
-      val informerProbe = testKit.createTestProbe[Informer.OpportunityAlert]()
+      val informerProbe = testKit.createTestProbe[Informer.Update]()
 
       // Values for BTC:CEX.IO actor
       val btcCexPairPrices = Map("USD" -> 40600.00)

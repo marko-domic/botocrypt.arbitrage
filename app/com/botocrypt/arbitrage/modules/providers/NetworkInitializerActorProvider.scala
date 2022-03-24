@@ -10,7 +10,7 @@ import com.google.inject.Provider
 import javax.inject.Inject
 
 class NetworkInitializerActorProvider @Inject()(actorSystem: ActorSystem,
-                                                informer: ActorRef[Informer.OpportunityAlert])
+                                                informer: ActorRef[Informer.Update])
   extends Provider[ActorRef[NetworkInitializer.Initialize]] {
   override def get(): ActorRef[NetworkInitializer.Initialize] = {
     actorSystem.spawn(NetworkInitializer.apply(informer), "network-initializer-actor")

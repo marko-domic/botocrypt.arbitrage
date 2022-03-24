@@ -5,3 +5,7 @@
 # ----     gRPC services    ----
 ->        /                  com.botocrypt.arbitrage.routers.ArbitrageRouter
 # ---- end of gRPC services ----
+
+# ----     REST endpoints   ----
+POST      /subscription/v1/subscribe     com.botocrypt.arbitrage.controllers.SubscriptionController.addSubscription()
+# ---- end of REST endpoints ----

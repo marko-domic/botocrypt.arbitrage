@@ -3,7 +3,6 @@ package com.botocrypt.arbitrage.actor.currency
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.botocrypt.arbitrage.actor.notification.Informer
-import com.botocrypt.arbitrage.actor.notification.Informer.OpportunityAlert
 import com.botocrypt.arbitrage.util.CoinIdentity
 import play.api.Logger
 
@@ -31,7 +30,7 @@ object Coin {
 
   def apply(coinBaseId: String, exchange: String, pairPrices: Map[String, Double],
             pairConversionData: Map[String, Coin.ConversionData],
-            informer: ActorRef[Informer.OpportunityAlert]): Behavior[Update] =
+            informer: ActorRef[Informer.Update]): Behavior[Update] =
     Behaviors.setup {
       _ => new Coin(coinBaseId, exchange, pairPrices, pairConversionData, informer).apply()
     }
@@ -42,7 +41,7 @@ class Coin private(
                     exchange: String,
                     var pairPrices: Map[String, Double],
                     var pairConversionData: Map[String, Coin.ConversionData],
-                    informer: ActorRef[Informer.OpportunityAlert]) {
+                    informer: ActorRef[Informer.Update]) {
 
   import Coin._
 
@@ -218,13 +217,13 @@ class Coin private(
     }
   }
 
-  private def convertPathToOpportunityAlert(path: ListMap[String, ConvertedContext]): OpportunityAlert = {
+  private def convertPathToOpportunityAlert(path: ListMap[String, ConvertedContext]): Informer.Update = {
 
     val opportunityPath: List[Informer.CoinContext] = path.map {
       case (_: String, convertedContext: ConvertedContext) =>
         Informer.CoinContext(convertedContext.coinBaseId, convertedContext.exchange)
     }.toList
 
-    OpportunityAlert(opportunityPath)
+    Informer.OpportunityAlert(opportunityPath)
   }
 }

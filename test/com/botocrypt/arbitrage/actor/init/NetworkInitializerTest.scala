@@ -12,7 +12,7 @@ class NetworkInitializerTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     "initialize" in {
 
       // Create necessary actors
-      val informerProbe = testKit.createTestProbe[Informer.OpportunityAlert]()
+      val informerProbe = testKit.createTestProbe[Informer.Update]()
       val receiver = testKit.createTestProbe[Receiver.Info]()
       val initializer = testKit.spawn(NetworkInitializer(informerProbe.ref), "initializer-test-1")
       val createNetworkMessage = CreateCoinNetwork(Map.empty, receiver.ref)
