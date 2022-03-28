@@ -1,7 +1,8 @@
 package com.botocrypt.arbitrage.actor.notification
 
 import akka.actor.typed.Behavior
-import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
+import akka.actor.typed.scaladsl.Behaviors
+import com.botocrypt.arbitrage.service.MailerService
 import play.api.Logger
 
 object Informer {
@@ -14,13 +15,13 @@ object Informer {
 
   case class CoinContext(coinBaseId: String, exchange: String)
 
-  def apply(): Behavior[Update] =
+  def apply(mailerService: MailerService): Behavior[Update] =
     Behaviors.setup {
-      context => new Informer(context, Set()).apply()
+      _ => new Informer(mailerService, Set()).apply()
     }
 }
 
-class Informer private(context: ActorContext[Informer.Update], var subscriptions: Set[String]) {
+class Informer private(val mailerService: MailerService, var subscriptions: Set[String]) {
 
   import Informer._
 
@@ -47,7 +48,17 @@ class Informer private(context: ActorContext[Informer.Update], var subscriptions
 
     logger.trace(s"OpportunityAlert message received. Path: ${opportunity.path}")
 
-    // TODO: Implement sending email
+    // Generate message content
+    val messageContent = prepareMessageContent(opportunity.path)
+
+    // Send message to every subscription
+    subscriptions.foreach((email: String) => mailerService.sendEmail(messageContent, email))
+
     Behaviors.same
+  }
+
+  private def prepareMessageContent(path: List[CoinContext]): String = {
+    path.map((coinCheckpoint: CoinContext) => s"${coinCheckpoint.coinBaseId}[${coinCheckpoint.exchange}]")
+      .mkString(" -> ")
   }
 }

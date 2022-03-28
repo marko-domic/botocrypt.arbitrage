@@ -113,7 +113,7 @@ class CoinTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
       // Validate message sent to informer about arbitrage opportunity
       val opportunityPath: List[CoinContext] = List(CoinContext("USD", "CEX.IO"), CoinContext("BTC", "CEX.IO"),
         CoinContext("BTC", "Binance"), CoinContext("USD", "Binance"))
-      informerProbe.expectMessage(Update(opportunityPath))
+      informerProbe.expectMessage(Informer.OpportunityAlert(opportunityPath))
     }
 
     "arbitrage opportunity not found" in {

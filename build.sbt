@@ -63,12 +63,15 @@ val CompileDeps = Seq(
   "com.typesafe.akka" %% "akka-http" % "10.2.9",
   "com.typesafe.akka" %% "akka-http-spray-json" % "10.2.9",
   "com.typesafe.akka" %% "akka-http2-support" % "10.2.9",
-  "com.h2database" % "h2" % "2.1.210"
+  "com.h2database" % "h2" % "2.1.210",
+  "com.typesafe.play" %% "play-mailer" % "8.0.1",
+  "com.typesafe.play" %% "play-mailer-guice" % "8.0.1"
 )
 
 val TestDeps = Seq(
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
-  "org.scalatest" %% "scalatest" % "3.2.11" % Test,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
+  "org.mockito" %% "mockito-scala" % "1.17.5" % Test,
   "com.lightbend.play" %% "play-grpc-scalatest" % playGrpcVersion % Test,
   "com.lightbend.play" %% "play-grpc-specs2" % playGrpcVersion % Test,
   "com.typesafe.play" %% "play-test" % playVersion % Test,
@@ -119,6 +122,11 @@ downloadProtoFiles := {
   }
 
   streams.value.log.info(s"Finished with downloading proto files in $destinationProtobufDirectory.")
+}
+
+excludeFilter := {
+  val logs = (baseDirectory.value / "logs").getCanonicalPath
+  new SimpleFileFilter(_.getCanonicalPath startsWith logs)
 }
 
 // Set task dependency chain
