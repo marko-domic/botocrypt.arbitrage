@@ -4,6 +4,7 @@ import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import com.botocrypt.arbitrage.actor.init.NetworkInitializer.CreateCoinNetwork
 import com.botocrypt.arbitrage.actor.notification.Informer
 import com.botocrypt.arbitrage.actor.receiver.Receiver
+import com.botocrypt.arbitrage.constant.DestinationValues
 import org.scalatest.wordspec.AnyWordSpecLike
 
 class NetworkInitializerTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
@@ -19,6 +20,11 @@ class NetworkInitializerTest extends ScalaTestWithActorTestKit with AnyWordSpecL
 
       // Send network initialize message
       initializer ! createNetworkMessage
+
+      // Validate if informer is updated with subscriptions
+      for (email <- DestinationValues.emails) {
+        informerProbe.expectMessage(Informer.AddSubscription(email))
+      }
 
       // Validate if initializer replied to receiver actor
       receiver.expectMessageType[Receiver.CoinNetworkInitialized]

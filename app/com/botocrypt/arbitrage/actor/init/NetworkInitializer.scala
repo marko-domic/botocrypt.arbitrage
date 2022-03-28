@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import com.botocrypt.arbitrage.actor.currency.Coin
 import com.botocrypt.arbitrage.actor.notification.Informer
 import com.botocrypt.arbitrage.actor.receiver.Receiver
+import com.botocrypt.arbitrage.constant.DestinationValues
 
 object NetworkInitializer {
 
@@ -33,6 +34,12 @@ class NetworkInitializer private(context: ActorContext[NetworkInitializer.Initia
       // Initialize Arbitrage coin actor network
       val coins: Map[String, ActorRef[Coin.Update]] =
         CoinNetwork.initialize(context, informer, createNetwork.existingCoins)
+
+      // Initialize informer with default emails
+      for (email <- DestinationValues.emails) {
+        informer ! Informer.AddSubscription(email)
+      }
+
       createNetwork.sender ! Receiver.CoinNetworkInitialized(coins)
 
       Behaviors.same

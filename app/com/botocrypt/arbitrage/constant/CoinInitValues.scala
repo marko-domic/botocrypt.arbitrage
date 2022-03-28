@@ -2,8 +2,7 @@ package com.botocrypt.arbitrage.constant
 
 object CoinInitValues {
 
-  case class ConversionInfo(landingCurrencyId: String, exchange: String,
-                            commissions: (Double, Double))
+  case class ConversionInfo(landingCurrencyId: String, exchange: String, commissions: (Double, Double))
 
   val CoinsPerExchange = Map(
     "CEX.IO" -> Map(
