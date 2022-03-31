@@ -10,39 +10,47 @@ rectangle "$getSystem($label, $descr, $sprite)$getProps()" $toStereos("external 
 
 UpdateSkinparamsAndLegendEntry("external system", $bgColor=$EXISTING_SYSTEM_BG_COLOR, $fontColor=$COLOR_NEUTRAL, $borderColor=$EXISTING_SYSTEM_BORDER_COLOR)
 
+Person(admin, "Botocrypt admin user", "User who subscribes other users on Botocrypt platform")
 Container(aggregator, "Data Aggregator Service", "Spring Boot", "Collects cryptocurrency prices fetched from external crypto exchanges and forwards them to the arbitrage service")
 System_Boundary(c3, "Arbitrage service") {
 
-    Component(initializer, "Coin Initializer", "Akka service", "Endpoint for receiving gRPC messages regarding price updates from Data Aggregator service and notify coin actor")
-    Component(controller, "Arbitrage Controller", "Akka gRPC", "Endpoint for receiving gRPC messages regarding price updates from Data Aggregator service and notify coin actor")
+    Component(router, "Arbitrage Router", "Akka gRPC server", "Endpoint for receiving gRPC messages regarding price updates from Data Aggregator service and notify coin actor")
+    Component(controller, "Subscription Controller", "Play controller", "REST API endpoint for adding new subscriptions")
+    Component(receiver, "Receiver Actor", "Akka actor", "Handle every message received from Aggregator service and creates all necessary coin actors at startup")
+    Component(initializer, "Network Initializer", "Akka actor", "Endpoint for receiving gRPC messages regarding price updates from Data Aggregator service and notify coin actor")
+    Component(subscriptionService, "Subscription Service", "Service", "Service for adding new subscription")
     Component(coin1, "Coin Actor (ex. BTC)", "Akka actor", "Store price of specific coin on specific exchange. Handles messages for price updates and arbitrage checks")
     Component(coin2, "Coin Actor (ex. ETH)", "Akka actor", "Store price of specific coin on specific exchange. Handles messages for price updates and arbitrage checks")
     Component(coin3, "Coin Actor (ex. XLM)", "Akka actor", "Store price of specific coin on specific exchange. Handles messages for price updates and arbitrage checks")
     Component(informer, "Informer Actor", "Akka actor", "Notifies subscribed users about detected opportunities on market")
 }
-ContainerDb(db, "Database", "MySQL", "Holds information about Botocrypt consumers", $sprite="mysql_server")
-Person(consumer, "Botocrypt consumer", "User who is subscribed to Botocrypt platform")
+ContainerDb(db, "Database", "PostgreSQL", "Holds information about Botocrypt consumers", $sprite="mysql_server")
+Person(consumer, "Botocrypt subscribed user", "User who is subscribed to Botocrypt platform")
 
-Rel_D(aggregator, controller, "Forwards crypto info from exchanges", "gRPC")
+Rel_R(aggregator, router, "Forwards crypto info from exchanges", "gRPC")
+Rel_D(admin, controller, "Add new subscription", "REST")
 
-Rel_D(initializer, coin1, "Initialize coin actor", "Akka mailbox")
-Rel_D(initializer, coin2, "Initialize coin actor", "Akka mailbox")
-Rel_D(initializer, coin3, "Initialize coin actor", "Akka mailbox")
+Rel_D(router, receiver, "Forwards messages from Aggregator service", "Akka mailbox")
+Rel_D(controller, subscriptionService, "Add new subscription", "Service call")
 
-Rel_D(controller, coin1, "Send coin price update", "Akka mailbox")
-Rel_D(controller, coin2, "Send coin price update", "Akka mailbox")
-Rel_D(controller, coin3, "Send coin price update", "Akka mailbox")
+Rel_R(receiver, initializer, "Initialize coin network with all coin actors", "Akka mailbox")
 
-Rel_R(coin1, coin2, "Send trading path event", "Akka mailbox")
-Rel_L(coin2, coin1, "Send trading path event", "Akka mailbox")
-Rel_R(coin2, coin3, "Send trading path event", "Akka mailbox")
-Rel_L(coin3, coin2, "Send trading path event", "Akka mailbox")
+Rel_D(receiver, coin1, "Send coin price updat", "Akka mailbox")
+Rel_D(receiver, coin2, "Send coin price updat", "Akka mailbox")
+Rel_D(receiver, coin3, "Send coin price updat", "Akka mailbox")
 
-Rel_D(coin1, informer, "Send notify event for found opportunity", "Akka mailbox")
-Rel_D(coin2, informer, "Send notify event for found opportunity", "Akka mailbox")
-Rel_D(coin3, informer, "Send notify event for found opportunity", "Akka mailbox")
+Rel_R(coin1, coin2, "Send trading path message", "Akka mailbox")
+Rel_L(coin2, coin1, "Send trading path message", "Akka mailbox")
+Rel_R(coin2, coin3, "Send trading path message", "Akka mailbox")
+Rel_L(coin3, coin2, "Send trading path message", "Akka mailbox")
 
-Rel_L(informer, db, "Reads from", "JDBC")
+Rel_D(coin1, informer, "Send notify message for found opportunity", "Akka mailbox")
+Rel_D(coin2, informer, "Send notify message for found opportunity", "Akka mailbox")
+Rel_D(coin3, informer, "Send notify message for found opportunity", "Akka mailbox")
+
+Rel_D(subscriptionService, informer, "Add new subscription", "Akka mailbox")
+
+Rel_L(informer, db, "Reads/Writes", "JDBC")
 Rel_R(informer, consumer, "Sends e-mail regarding opportunity")
 
 @enduml

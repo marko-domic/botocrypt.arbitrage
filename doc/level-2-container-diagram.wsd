@@ -13,14 +13,14 @@ UpdateSkinparamsAndLegendEntry("external system", $bgColor=$EXISTING_SYSTEM_BG_C
 System_Existing(exchanges, "Crypto Exchanges", "Supported exchanges: CEX.IO")
 System_Boundary(c2, "Botocrypt Platform") {
     Container(aggregator, "Data Aggregator Service", "Spring Boot", "Collects cryptocurrency prices fetched from external crypto exchanges and forwards them to the arbitrage service")
-    Container(arbitrage, "Arbitrage Service", "Akka", "Process cryptocurrency prices received from aggregator service and finds the best opportunities on the market")
-    ContainerDb(db, "Database", "PostgreSQL", "Holds information about Botocrypt consumers", $sprite="postgres_server")
+    Container(arbitrage, "Arbitrage Service", "Play framework with Akka", "Process cryptocurrency prices received from aggregator service and finds the best opportunities on the market")
+    ContainerDb(db, "Database", "PostgreSQL", "Holds information about Botocrypt subscribers", $sprite="postgres_server")
 }
-Person(consumer, "Botocrypt consumer", "User who is subscribed to Botocrypt platform")
+Person(consumer, "Botocrypt subscriber", "User who is subscribed to Botocrypt platform")
 
 Rel_L(aggregator, exchanges, "Fetch crypto prices from echanges", "HTTPS")
 Rel_D(aggregator, arbitrage, "Forwards crypto info from exchanges", "gRPC")
-Rel_L(arbitrage, db, "Reads from", "JDBC")
-Rel_R(arbitrage, consumer, "Sends e-mail regarding opportunity")
+Rel_L(arbitrage, db, "Reads/Writes from", "JDBC")
+Rel_R(arbitrage, consumer, "Sends e-mail with trading opportunity")
 
 @enduml

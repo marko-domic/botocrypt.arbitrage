@@ -1,0 +1,65 @@
+@startuml C4_Elements
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+actor "gRPC Client" as grpcClient
+participant "Arbitrage Service Router" as arbitrageServiceRouter #9EA0CA
+participant "Receiver Actor" as receiverActor #9EA0CA
+participant "Network Initializer Actor" as networkInitializerActor #9EA0CA
+collections "Coin Actors" as coinActors #3768BB
+participant "Informer Actor" as informerActor #9EA0CA
+actor "Subscribed User" as subscribedUser
+
+grpcClient -> arbitrageServiceRouter: [gRPC] /coin-update-from-exchange
+
+activate arbitrageServiceRouter
+
+    arbitrageServiceRouter -> receiverActor: [Akka message] /update-coin-prices
+       
+deactivate arbitrageServiceRouter
+
+activate receiverActor        
+        
+    alt Coin network not initialized
+        receiverActor -> networkInitializerActor: [Akka message] /create-coin-network
+
+        loop number of coin:exchange pairs
+
+            networkInitializerActor -> coinActors: /create-coin-actor
+
+            coinActors --> networkInitializerActor: Coin Actor Created
+
+        end
+
+        networkInitializerActor --> receiverActor: Coin Network created
+
+        receiverActor -> receiverActor: [Akka message] /update-coin-prices
+    end
+
+    receiverActor -> coinActors: [Akka message] /update-coin-prices
+
+deactivate receiverActor
+
+activate coinActors
+
+    loop total combinations of trading coin pairs
+        
+        coinActors -> coinActors: [Akka message] /find-trading-path
+        
+        alt successful case
+
+            coinActors -> informerActor: [Akka message] /send-trading-path
+
+            activate informerActor
+
+                informerActor -> subscribedUser: Send email about trading path
+                subscribedUser --> informerActor: Email received
+
+            deactivate informerActor
+
+        end
+    end
+        
+deactivate coinActors
+
+
+@enduml

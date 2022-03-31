@@ -1,0 +1,37 @@
+@startuml C4_Elements
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+actor "Admin Client" as adminClient
+participant "Subscription Controller" as subscriptionController #9EA0CA
+participant "Subscription Service" as subscriptionService #9EA0CA
+participant "Informer Actor" as informerActor #9EA0CA
+database "Postgres" as db #3768BB
+
+adminClient -> subscriptionController: [REST] /add-subscription
+
+activate subscriptionController
+
+    subscriptionController -> subscriptionService: [Service call] /add-subscription
+
+    activate subscriptionService
+
+        subscriptionService -> informerActor: [Akka message] /add-subscription
+
+        activate informerActor
+
+            informerActor -> db: Persist subscribers email
+
+            db --> informerActor: Email persisted
+
+        deactivate informerActor
+
+        subscriptionService --> subscriptionController: Subscription registered        
+
+    deactivate subscriptionService
+
+    subscriptionController --> adminClient: Subscription registered
+
+
+deactivate subscriptionController
+
+@enduml

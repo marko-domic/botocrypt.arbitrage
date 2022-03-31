@@ -30,20 +30,19 @@ model for visualising):
 
 There are 2 different role types of Arbitrage service. 
 
-First is to initialize all necessary actors for price calculations, described on diagram bellow:
+Initializing all necessary actors and calculating price difference between crypto coins:
 
 &nbsp;&nbsp;
 
-![Actor initialization sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/actor-init-sequence-diagram.wsd)
+![Actor initialization sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/actor-init-and-finding-trading-path-sequence-diagram.wsd)
 
 &nbsp;&nbsp;
 
-Second and the main purpose of this service is to calculate price difference between crypto coins 
-and exchanges as well:
+Adding new subscription for Botocrypt platform:
 
 &nbsp;&nbsp;
 
-![Arbitrage calculation sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/arbitrage-calculation-sequence-diagram.wsd)
+![Arbitrage calculation sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/add-subscription-sequence-diagram.wsd)
 
 
 

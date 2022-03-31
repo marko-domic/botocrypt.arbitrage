@@ -14,9 +14,9 @@ System_Existing(exchanges, "Crypto Exchanges", "Supported exchanges: CEX.IO")
 System_Boundary(c1, "Botocrypt Platform") {
     System(botocrypt, "Botocrypt Application", "Collects and process cryptocurrency prices fetched from external crypto exchanges and finds the best opportunities on the market to exploit price differentials between them")
 }
-Person(consumer, "Botocrypt consumer", "User who is subscribed to Botocrypt platform")
+Person(consumer, "Subscribed user", "User who is subscribed to Botocrypt platform")
 
 Rel_L(botocrypt, exchanges, "Fetch crypto prices from echanges", "HTTPS")
-Rel_R(botocrypt, consumer, "Sends e-mail regarding opportunity")
+Rel_R(botocrypt, consumer, "Sends e-mail with trading opportunity")
 
 @enduml
