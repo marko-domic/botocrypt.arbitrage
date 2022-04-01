@@ -1,8 +1,9 @@
 # Arbitrage Service
 
 A part of the Botocrypt platform, the main purpose of this service is to process collected cryptocurrency exchanges 
-data from aggregator and to find differences in prices. Using Akka toolkit, each coin for every exchange has up-to-date
-prices and syncs with other coins. After finding trading path opportunity, subscribed users are notified about it.
+data from **Aggregator service** and to find differences in prices. Using Akka toolkit, each coin for every exchange 
+has up-to-date prices and syncs with other coins. After finding trading path opportunity, subscribed users are notified 
+about it.
 
 ## Architecture overview
 
