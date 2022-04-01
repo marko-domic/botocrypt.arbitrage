@@ -58,8 +58,6 @@ Currencies with which Aggregator service works are:
 
 ## Technology Stack
 
-## Technology Stack
-
 ### Server
 
 | Technology                                                  | Description                                                                                            |
