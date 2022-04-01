@@ -1,11 +1,16 @@
 import com.typesafe.sbt.packager.docker.{Cmd, CmdLike, DockerAlias, ExecCmd}
 import play.core.PlayVersion.akkaVersion
 import play.grpc.gen.scaladsl.{PlayScalaClientCodeGenerator, PlayScalaServerCodeGenerator}
+import com.typesafe.sbt.packager.docker.DockerChmodType
+import com.typesafe.sbt.packager.docker.DockerPermissionStrategy
 
 name := """arbitrage"""
 organization := "com.botocrypt"
 
 version := "1.0-SNAPSHOT"
+
+dockerChmodType := DockerChmodType.UserGroupWriteExecute
+dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
 
 // Arbitrage API spec constants
 lazy val arbitrageApiSpecRepoUrl = "https://raw.githubusercontent.com/marko-domic/botocrypt.proto"
@@ -29,7 +34,7 @@ lazy val root = (project in file("."))
     akkaGrpcExtraGenerators += PlayScalaClientCodeGenerator,
     akkaGrpcExtraGenerators += PlayScalaServerCodeGenerator,
     PlayKeys.devSettings ++= Seq(
-      "play.server.http.port" -> "9080",
+      "play.server.http.port" -> "9000",
       "play.server.https.port" -> "disabled"
     )
   )
@@ -136,3 +141,13 @@ Compile / compile := (Compile / compile).dependsOn(
 // Make verbose tests
 Test / testOptions := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
 
+// Docker configuration
+Docker / maintainer := "marko.domic@outlook.com"
+Docker / packageName := "botocrypt/arbitrage"
+Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0")
+Docker / daemonUserUid  := None
+Docker / daemonUser := "daemon"
+dockerExposedPorts := Seq(9000)
+dockerBaseImage := "openjdk:8-jre-alpine"
+dockerRepository := sys.env.get("ecr_repo")
+dockerUpdateLatest := true

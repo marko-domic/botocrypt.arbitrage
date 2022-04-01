@@ -17,13 +17,13 @@ An overview of Botocrypt architecture and Arbitrage service looks like this (usi
 &nbsp;&nbsp;
 
 *Level 2 - Container diagram*
-&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;
 ![Level 2 - Container diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/level-2-container-diagram.wsd)
 
 &nbsp;&nbsp;
 
 *Level 3 - Component diagram*
-&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;
 ![Level 3 - Component diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/level-3-component-diagram.wsd)
 
 &nbsp;&nbsp;
@@ -33,13 +33,13 @@ There are 2 different role types of Arbitrage service.
 &nbsp;&nbsp;
 
 *Initializing all necessary actors and calculating price difference between crypto coins*
-&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;
 ![Actor initialization sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/actor-init-and-finding-trading-path-sequence-diagram.wsd)
 
 &nbsp;&nbsp;
 
 *Adding new subscription for Botocrypt platform*
-&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;
 ![Arbitrage calculation sequence diagram](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/marko-domic/botocrypt.arbitrage/main/doc/add-subscription-sequence-diagram.wsd)
 
 ## Registered exchanges
@@ -112,6 +112,12 @@ This command will trigger project build and all tests of the project, which are 
 
 ### Build Docker image
 
+Creating Docker image of a service can be done by executing command:
+
+```shell
+./sbt docker:publishLocal
+```
+
 ### Running the application in production mode
 
 ```shell
@@ -121,6 +127,15 @@ target/universal/stage/bin/arbitrage -Dplay.http.secret.key='BMKF7JN39bMOPOOuIqM
 
 Secret key defined with parameter play.http.secret.key should be changed for every application starting in production 
 mode
+
+### Running the application in production mode using Docker
+
+```shell
+docker run --rm -p 9000:9000 --env APPLICATION_SECRET=BMKF7JN39bMOPOOuIqM7 botocrypt/arbitrage
+```
+
+Secret key defined in environment variable APPLICATION_SECRET should be changed for every application starting in 
+production mode
 
 ### Running the application locally
 
