@@ -56,6 +56,10 @@ Currencies with which Aggregator service works are:
 * BTC
 * USD
 * ETH
+* XRP
+* XLM
+* LTC
+* ADA
 
 ## Technology Stack
 

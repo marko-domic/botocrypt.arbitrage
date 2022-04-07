@@ -60,18 +60,21 @@ class Coin private(
 
     logger.trace(s"SetCoinPairActor message received. Coin id: ${coinPairActorUpdate.coinId}")
 
+    val thisCoinId = CoinIdentity.getCoinId(coinBaseId, exchange)
     val updateCoinId = coinPairActorUpdate.coinId
     val updateCoinActor = coinPairActorUpdate.coinPairActor
 
-    val landingConversionData: ConversionData = pairConversionData(updateCoinId)
-    if (landingConversionData == null) {
-      logger.warn(s"There is no conversion data for coin $updateCoinId.")
+    val maybeLandingConversionData: Option[ConversionData] = pairConversionData.get(updateCoinId)
+    if (maybeLandingConversionData.isEmpty) {
+      logger.info(s"There is no conversion data for coin $updateCoinId in $thisCoinId.")
       return Behaviors.same
     }
 
+    val landingConversionData: ConversionData = maybeLandingConversionData.get
+
     if (landingConversionData.landingCoin == null) {
-      logger.info(s"Setting coin pair ${CoinIdentity.getCoinId(coinBaseId, exchange)} - " +
-        s"$updateCoinId from exchange $exchange to exchange ${landingConversionData.exchange}.")
+      logger.info(s"Setting coin pair $thisCoinId - $updateCoinId from exchange $exchange to exchange " +
+        s"${landingConversionData.exchange}.")
 
       val newLandingConversionData = ConversionData(landingConversionData.landingCoinBaseId,
         updateCoinActor, landingConversionData.exchange, landingConversionData.commissions)
