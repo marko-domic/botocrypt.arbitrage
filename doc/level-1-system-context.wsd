@@ -10,7 +10,7 @@ rectangle "$getSystem($label, $descr, $sprite)$getProps()" $toStereos("external 
 
 UpdateSkinparamsAndLegendEntry("external system", $bgColor=$EXISTING_SYSTEM_BG_COLOR, $fontColor=$COLOR_NEUTRAL, $borderColor=$EXISTING_SYSTEM_BORDER_COLOR)
 
-System_Existing(exchanges, "Crypto Exchanges", "Supported exchanges: CEX.IO")
+System_Existing(exchanges, "Crypto Exchanges", "Supported exchanges: CEX.IO, Binance")
 System_Boundary(c1, "Botocrypt Platform") {
     System(botocrypt, "Botocrypt Application", "Collects and process cryptocurrency prices fetched from external crypto exchanges and finds the best opportunities on the market to exploit price differentials between them")
 }

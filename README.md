@@ -48,6 +48,7 @@ There are 2 different role types of Arbitrage service.
 Exchanges from where Aggregator service receives cryptocurrency orders are:
 
 * [CEX.IO](https://cex.io/)
+* [Binance](https://www.binance.com/en)
 
 ## Registered currencies
 
