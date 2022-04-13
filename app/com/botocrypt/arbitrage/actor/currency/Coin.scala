@@ -147,9 +147,16 @@ class Coin private(
 
   private def arbitrageInsideExchange(landingCoinBaseId: String, sourceAmount: Double,
                                       arbitragePath: ListMap[String, ConvertedContext]): Unit = {
+
     val landingCoinId: String = CoinIdentity.getCoinId(landingCoinBaseId, exchange)
-    val landingContext: ConvertedContext = ConvertedContext(landingCoinBaseId, exchange,
-      calculateLandingAmountInsideExchange(landingCoinId, landingCoinBaseId, sourceAmount))
+    val landingCoinAmount: Double = calculateLandingAmountInsideExchange(landingCoinId, landingCoinBaseId, sourceAmount)
+
+    // Validate new calculated landing amount
+    if (!isAmountValid(landingCoinAmount)) {
+        return
+    }
+
+    val landingContext: ConvertedContext = ConvertedContext(landingCoinBaseId, exchange, landingCoinAmount)
     val landingPath: ListMap[String, ConvertedContext] = arbitragePath + (landingCoinId -> landingContext)
     pairConversionData(landingCoinId).landingCoin ! Arbitrage(landingPath, exchangeToExchange = false,
       ConvertedContext(coinBaseId, exchange, -1))
@@ -162,7 +169,14 @@ class Coin private(
       val landingCoinBaseId: String = conversionData.landingCoinBaseId
       val landingExchange: String = conversionData.exchange
       if (landingCoinBaseId == coinBaseId) {
+
         val landingAmount = calculateLandingAmountOnOtherExchange(landingCoinId, sourceAmount)
+
+        // Validate new calculated landing amount
+        if (!isAmountValid(landingAmount)) {
+          return
+        }
+
         val convertedContext: ConvertedContext = ConvertedContext(landingCoinBaseId, landingExchange, landingAmount)
         val landingPath: ListMap[String, ConvertedContext] = arbitragePath + (landingCoinId -> convertedContext)
         conversionData.landingCoin ! Arbitrage(landingPath, exchangeToExchange = true,
@@ -209,9 +223,19 @@ class Coin private(
   private def validateOpportunity(landingConvertedContext: ConvertedContext, sourceAmount: Double,
                                   path: ListMap[String, ConvertedContext]): Unit = {
 
+    // If landing amount is not valid, ignore it
+    if (!isAmountValid(landingConvertedContext.amount)) {
+      return
+    }
+
     val landingCoinBaseId: String = landingConvertedContext.coinBaseId
     val landingCoinId: String = CoinIdentity.getCoinId(landingCoinBaseId, exchange)
     val newLandingAmount = calculateLandingAmountInsideExchange(landingCoinId, landingCoinBaseId, sourceAmount)
+
+    // If new amount is not valid, ignore it
+    if (!isAmountValid(newLandingAmount)) {
+      return
+    }
 
     // Check if new amount is greater then existing amount in arbitrage path
     if (newLandingAmount > landingConvertedContext.amount) {
@@ -228,5 +252,9 @@ class Coin private(
     }.toList
 
     Informer.OpportunityAlert(opportunityPath)
+  }
+
+  private def isAmountValid(amount: Double): Boolean = {
+    amount > 0
   }
 }

@@ -51,6 +51,8 @@ class Informer private(val mailerService: MailerService, var subscriptions: Set[
     // Generate message content
     val messageContent = prepareMessageContent(opportunity.path)
 
+    logger.info(s"Trading opportunity path: $messageContent")
+
     // Send message to every subscription
     subscriptions.foreach((email: String) => mailerService.sendEmail(messageContent, email))
 
