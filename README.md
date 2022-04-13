@@ -60,6 +60,7 @@ Currencies with which Aggregator service works are:
 * XLM
 * LTC
 * ADA
+* USDT
 
 ## Technology Stack
 
